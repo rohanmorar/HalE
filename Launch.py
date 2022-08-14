@@ -2,12 +2,14 @@ import pyttsx3
 import os
 import time
 import speech_recognition as sr
+import random
+from quotes import ql
 
 # global vars for name, current hour, voiceID, and voice Rate
 NAME = "Rohan"
 time = int(time.strftime('%H'))
 voiceID = 28 # Other voice ID's -> SHm: 11, SAf: 17, Brf: 28 , YTm : 7, USf: 33, JPf: 18, Spf: 26
-RATE = 250
+RATE = 200
 
 #Applications
 Apps = {
@@ -19,7 +21,6 @@ Apps = {
 myKeys = Apps.keys()
 
 #initializing libraries
-# engine = pyttsx3.init()
 r = sr.Recognizer()
 
 def setUpEngine(engine):
@@ -38,7 +39,6 @@ def timeGreeting(hour, name):
 	engine = pyttsx3.init()
 	setUpEngine(engine)
 	if 5 <= hour <= 11:
-
 		print(f"Good morning, {name}!")
 		engine.say(f"Good morning, my friend, {name}!")
 	elif 12 <= hour <= 17:
@@ -69,24 +69,32 @@ while ON:
 			# Using google to recognize audio
 			MyText = r.recognize_google(audio2)
 			MyText = MyText.lower()
-			
-			appName = MyText
+
+			# for recognizing "open" command followed by app in Apps list
 
 			if MyText == "go to sleep":
 				SpeakText(f"Goodbye, {NAME}")
 				ON = False
 				break
 
-			for key in Apps:
-				if appName not in Apps.keys():
-					print(f"Sorry {NAME}, I can't find that app.")
-					SpeakText(f"Sorry {NAME}, I can't find that app.")
-					break
-				elif key == appName:
-					print("Opening " + Apps[key]["appName"])
-					SpeakText("Opening, "  + Apps[key]["appName"])
-					os.system("open " + Apps[key]["Path"])
-					break		
+			if MyText == "quote":
+				quote = random.choice(ql)
+				print(quote)
+				SpeakText(quote)
+
+			# opens application with keyphrase "open [app name shorthand(e.g. chrome)]"
+			command, appName = MyText[:4], MyText[5:]
+
+			if command == "open" and appName in Apps.keys():
+				print("Opening " + Apps[appName]["appName"])
+				SpeakText("Opening, "  + Apps[appName]["appName"])
+				os.system("open " + Apps[appName]["Path"])
+			elif command == "open" and appName not in Apps.keys(): # and appName != "quote" or appName != "quot"
+				print(f"Sorry {NAME}, I can't find that app.")
+				SpeakText(f"Sorry {NAME}, I can't find that app.")
+			else:
+				continue
+
 	except sr.RequestError as e:
 	    print("Could not request results; {0}".format(e))
 	     
